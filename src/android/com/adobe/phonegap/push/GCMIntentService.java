@@ -217,12 +217,52 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
 
         return count;
     }
+    
+    private String getMessageText(Bundle extras) {
+        try{
+            JSONObject obj = new JSONObject(extras.getString("message"));
+            String message = obj.getString("body");
+            // if (message == null) {
+            //     message = getString(extras,"body");
+            // }
+            return message;
+        }
+        catch(Exception e){
+            System.out.println(e);
+            return e.toString();
+        }
+    }
+    
+    private String getMessageTitle(Bundle extras) {
+
+
+        try{
+            JSONObject obj = new JSONObject(extras.getString("message"));
+            String message = obj.getString("title");
+            // if (message == null) {
+            //     message = getString(extras,"title");
+            // }
+            return message;
+
+
+
+
+        }
+        catch(Exception e){
+            System.out.println(e);
+            return e.toString();
+        }
+    }
 
     private void showNotificationIfPossible (Context context, Bundle extras) {
 
         // Send a notification if there is a message or title, otherwise just send data
-        String message = extras.getString(MESSAGE);
-        String title = extras.getString(TITLE);
+        
+        // Send a notification if there is a message or title, otherwise just send data
+        String message = getMessageText(extras);
+        System.out.println(message);
+        String title = getMessageTitle(extras);
+        System.out.println(title);
         String contentAvailable = extras.getString(CONTENT_AVAILABLE);
         int badgeCount = extractBadgeCount(extras);
         if (badgeCount >= 0) {
@@ -266,8 +306,8 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setWhen(System.currentTimeMillis())
-                        .setContentTitle(fromHtml(extras.getString(TITLE)))
-                        .setTicker(fromHtml(extras.getString(TITLE)))
+                        .setContentTitle(fromHtml(getMessageTitle(extras)))
+                        .setTicker(fromHtml(getMessageText(extras)))
                         .setContentIntent(contentIntent)
                         .setAutoCancel(true);
 
@@ -494,7 +534,9 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
     }
 
     private void setNotificationMessage(int notId, Bundle extras, NotificationCompat.Builder mBuilder) {
-        String message = extras.getString(MESSAGE);
+        String message = getMessageText(extras);
+        
+        // extras.getString(MESSAGE);
 
         String style = extras.getString(STYLE, STYLE_TEXT);
         if(STYLE_INBOX.equals(style)) {
@@ -512,7 +554,7 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
                     stacking = stacking.replace("%n%", sizeListMessage);
                 }
                 NotificationCompat.InboxStyle notificationInbox = new NotificationCompat.InboxStyle()
-                        .setBigContentTitle(fromHtml(extras.getString(TITLE)))
+                        .setBigContentTitle(fromHtml(getMessageText(extras)))
                         .setSummaryText(fromHtml(stacking));
 
                 for (int i = messageList.size() - 1; i >= 0; i--) {
@@ -524,7 +566,7 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
                 NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
                 if (message != null) {
                     bigText.bigText(fromHtml(message));
-                    bigText.setBigContentTitle(fromHtml(extras.getString(TITLE)));
+                    bigText.setBigContentTitle(fromHtml(getMessageText(extras)));
                     mBuilder.setStyle(bigText);
                 }
             }
@@ -533,11 +575,11 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
 
             NotificationCompat.BigPictureStyle bigPicture = new NotificationCompat.BigPictureStyle();
             bigPicture.bigPicture(getBitmapFromURL(extras.getString(PICTURE)));
-            bigPicture.setBigContentTitle(fromHtml(extras.getString(TITLE)));
+            bigPicture.setBigContentTitle(fromHtml(getMessageTitle(extras)));
             bigPicture.setSummaryText(fromHtml(extras.getString(SUMMARY_TEXT)));
 
-            mBuilder.setContentTitle(fromHtml(extras.getString(TITLE)));
-            mBuilder.setContentText(fromHtml(message));
+            mBuilder.setContentTitle(fromHtml(getMessageTitle(extras)));
+            mBuilder.setContentText(fromHtml(getMessageText(extras)));
 
             mBuilder.setStyle(bigPicture);
         } else {
@@ -549,7 +591,7 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
                 mBuilder.setContentText(fromHtml(message));
 
                 bigText.bigText(fromHtml(message));
-                bigText.setBigContentTitle(fromHtml(extras.getString(TITLE)));
+                bigText.setBigContentTitle(fromHtml(getMessageText(extras)));
 
                 String summaryText = extras.getString(SUMMARY_TEXT);
                 if (summaryText != null) {
